@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aesthetic Pomodoro Widget</title>
+    <style>
+        /* Base Setup */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: transparent; /* Allows embed background to show */
+            font-family: 'Inter', 'Roboto', sans-serif;
+        }
+
+        /* The Main Widget Container */
+        #widget-container {
+            background-color: #1a1a1a;
+            width: 350px;
+            height: 220px;
+            border-radius: 40px; /* Deep rounded corners from image */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        /* Fullscreen Mode Styling */
+        #widget-container:fullscreen {
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+        }
+
+        /* Fullscreen Icon Button */
+        .fs-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        .fs-toggle:hover { opacity: 1; }
+        .fs-toggle svg { fill: white; width: 20px; height: 20px; }
+
+        /* Timer Text */
+        #timer {
+            font-size: 4.5rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 15px;
+            letter-spacing: -1px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Button Container */
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Pill Buttons */
+        .pill-btn {
+            background-color: white;
+            border: none;
+            color: black;
+            padding: 10px 30px;
+            border-radius: 50px; /* Pill shape */
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .pill-btn:active { transform: scale(0.95); }
+        .pill-btn:disabled {
+            background-color: #444;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        /* Decorative Bottom Bar from Reference */
+        .bottom-bar {
+            position: absolute;
+            bottom: 15px;
+            width: 60px;
+            height: 4px;
+            background-color: #333;
+            border-radius: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="widget-container">
+        <button class="fs-toggle" onclick="toggleFullScreen()" title="Toggle Fullscreen">
+            <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+        </button>
+
+        <div id="timer">05:00</div>
+        
+        <div class="controls">
+            <button id="startBtn" class="pill-btn" onclick="startTimer()">Start</button>
+            <button id="pauseBtn" class="pill-btn" onclick="pauseTimer()" disabled>Pause</button>
+        </div>
+
+        <div class="bottom-bar"></div>
+    </div>
+
+    <script>
+        let timeLeft = 5 * 60;
+        let timerId = null;
+        let isComplete = false;
+
+        const timerDisplay = document.getElementById('timer');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const container = document.getElementById('widget-container');
+
+        function updateDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (isComplete) return;
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    completeSession();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerId);
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+        }
+
+        function completeSession() {
+            isComplete = true;
+            timerDisplay.style.color = "#555";
+            startBtn.disabled = true;
+            pauseBtn.disabled = true;
+            startBtn.textContent = "Done";
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+    </script>
+</body>
+</html>
